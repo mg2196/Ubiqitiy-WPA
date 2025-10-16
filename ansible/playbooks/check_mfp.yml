@@ -1,0 +1,37 @@
+- name: Check and Run WPA script on Ubiquiti APs
+  hosts: ubiquiti_aps
+  gather_facts: no
+  vars:
+    wpa_script: "{{ lookup('file', '../../wpa.sh') }}"
+  tasks:
+
+    
+    
+    - name: Check if WPA script exists on AP
+      raw: '[ -f /tmp/wpa.sh ] && echo "exists" || echo "missing"'
+      register: wpa_script_check
+
+    - name: Deploy WPA script if not present
+      raw: |
+        cat << 'EOF' > /tmp/wpa.sh
+        {{ wpa_script }}
+        EOF
+        chmod +x /tmp/wpa.sh
+      when: "'missing' in wpa_script_check.stdout"
+
+
+    - name: Run WPA script
+      raw: /tmp/wpa.sh
+      register: wpa_output
+    - name: Append raw WPA output to a shared file
+      delegate_to: localhost
+      shell: |
+        {
+          echo "{{ inventory_hostname }}:";
+          {% for line in wpa_output.stdout_lines %}
+          echo "{{ line }}";
+          {% endfor %}
+          echo "";
+        } >> "../../clients/all_clients.txt"
+      args:
+        executable: /bin/bash
