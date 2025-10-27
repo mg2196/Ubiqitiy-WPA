@@ -1,7 +1,7 @@
 #!/bin/bash
 rm ./clients/all_clients.txt
 
-ansible-playbook -i ./ansible/inventory/technologysolutionsoffice.ini ./ansible/playbooks/check_mfp.yml
+ansible-playbook -i ./ansible/inventory/tsaoffice.ini ./ansible/playbooks/check_mfp.yml
 
 
 python3 filter.py
